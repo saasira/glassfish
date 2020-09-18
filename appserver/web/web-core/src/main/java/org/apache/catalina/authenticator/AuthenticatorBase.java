@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,13 +17,14 @@
 
 package org.apache.catalina.authenticator;
 
+import static com.sun.logging.LogCleanerUtil.neutralizeForLog;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.web.valve.GlassFishValve;
-
+import java.security.SecureRandom;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +33,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.text.MessageFormat;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -191,13 +150,13 @@ public abstract class AuthenticatorBase
     /**
      * A random number generator to use when generating session identifiers.
      */
-    protected Random random = null;
+    protected SecureRandom random = null;
     
     /**
      * The Java class name of the random number generator class to be used
      * when generating session identifiers.
      */
-    protected String randomClass = java.security.SecureRandom.class.getName();
+    protected String randomClass = SecureRandom.class.getName();
         
     /**
      * The SingleSignOn implementation in our request processing chain,
@@ -474,7 +433,7 @@ public abstract class AuthenticatorBase
                          ((HttpServletRequest) request.getRequest()).getMethod() + " " +
                          ((HttpServletRequest) request.getRequest()).getRequestURI();
 
-            log.log(Level.FINE, msg);
+            log.log(Level.FINE, neutralizeForLog(msg));
         }
         LoginConfig config = this.context.getLoginConfig();
         
@@ -492,7 +451,7 @@ public abstract class AuthenticatorBase
                                          session.getAuthType() +
                                          " for principal " +
                                          session.getPrincipal();
-                            log.log(Level.FINE, msg);
+                            log.log(Level.FINE, neutralizeForLog(msg));
                         }
                         hrequest.setAuthType(session.getAuthType());
                         hrequest.setUserPrincipal(principal);
@@ -744,12 +703,12 @@ public abstract class AuthenticatorBase
      * generating session identifiers.  If there is no such generator
      * currently defined, construct and seed a new one.
      */
-    protected synchronized Random getRandom() {
+    protected synchronized SecureRandom getRandom() {
         
         if (this.random == null) {
             try {
                 Class clazz = Class.forName(randomClass);
-                this.random = (Random) clazz.newInstance();
+                this.random = (SecureRandom) clazz.newInstance();
                 long seed = System.currentTimeMillis();
                 char entropy[] = getEntropy().toCharArray();
                 for (int i = 0; i < entropy.length; i++) {
@@ -758,7 +717,7 @@ public abstract class AuthenticatorBase
                 }
                 this.random.setSeed(seed);
             } catch (Exception e) {
-                this.random = new java.util.Random();
+                this.random = new SecureRandom();
             }
         }
         
@@ -801,6 +760,7 @@ public abstract class AuthenticatorBase
      * @param message Message to be logged
      */
     protected void log(String message) {
+        message = neutralizeForLog(message);
         org.apache.catalina.Logger logger = context.getLogger();
         if (logger != null) {
             logger.log("Authenticator[" + context.getPath() + "]: " +
@@ -820,6 +780,7 @@ public abstract class AuthenticatorBase
      * @param t Associated exception
      */
     protected void log(String message, Throwable t) {
+        message = neutralizeForLog(message);
         org.apache.catalina.Logger logger = context.getLogger();
         if (logger != null) {
             logger.log("Authenticator[" + context.getPath() + "]: " +
@@ -853,7 +814,7 @@ public abstract class AuthenticatorBase
             String pname = ((principal != null) ? principal.getName() : "[null principal]");
             String msg = "Authenticated '" + pname + "' with type '"
                          + authType + "'";
-            log.log(Level.FINE, msg);
+            log.log(Level.FINE, neutralizeForLog(msg));
         }
         // Cache the authentication information in our request
         request.setAuthType(authType);
@@ -986,7 +947,7 @@ public abstract class AuthenticatorBase
             if (!authenticate(hrequest, hresponse, config)) {
                 if (log.isLoggable(Level.FINE)) {
                     String msg = " Failed authenticate() test ??" + requestURI;
-                    log.log(Level.FINE, msg);
+                    log.log(Level.FINE, neutralizeForLog(msg));
                 }
                 return END_PIPELINE;
             }

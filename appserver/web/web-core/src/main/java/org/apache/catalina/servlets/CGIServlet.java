@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1180,80 +1139,88 @@ public final class CGIServlet extends HttpServlet {
             StringBuilder destPath = new StringBuilder();
             InputStream is = null;
 
-            // paths depend on mapping
-            if (cgiPathPrefix == null ) {
-                srcPath.append(pathInfo);
-                is = context.getResourceAsStream(srcPath.toString());
-                destPath.append(tmpDir);
-                destPath.append(pathInfo);
-            } else {
-                // essentially same search algorithm as findCGI()
-                srcPath.append(cgiPathPrefix);
-                StringTokenizer pathWalker =
-                        new StringTokenizer (pathInfo, "/");
-                // start with first element
-                while (pathWalker.hasMoreElements() && (is == null)) {
-                    srcPath.append("/");
-                    srcPath.append(pathWalker.nextElement());
-                    is = context.getResourceAsStream(srcPath.toString());
-                }
-                destPath.append(tmpDir);
-                destPath.append("/");
-                destPath.append(srcPath);
-            }
-
-            if (is == null) {
-                // didn't find anything, give up now
-                if (debug >= 2) {
-                    log("expandCGIScript: source '" + srcPath + "' not found");
-                }
-                 return;
-            }
-
-            File f = new File(destPath.toString());
-            if (f.exists()) {
-                // Don't need to expand if it already exists
-                return;
-            } 
-
-            // create directories
-            String dirPath = destPath.toString().substring(
-                    0,destPath.toString().lastIndexOf("/"));
-            File dir = new File(dirPath);
-            if (!dir.mkdirs() && debug >= 2) {
-                log("expandCGIScript: failed to create directories for '" +
-                        dir.getAbsolutePath() + "'");
-                return;
-            }
-
             try {
-                synchronized (expandFileLock) {
-                    // make sure file doesn't exist
-                    if (f.exists()) {
-                        return;
+                // paths depend on mapping
+                if (cgiPathPrefix == null) {
+                    srcPath.append(pathInfo);
+                    is = context.getResourceAsStream(srcPath.toString());
+                    destPath.append(tmpDir);
+                    destPath.append(pathInfo);
+                } else {
+                    // essentially same search algorithm as findCGI()
+                    srcPath.append(cgiPathPrefix);
+                    StringTokenizer pathWalker =
+                      new StringTokenizer(pathInfo, "/");
+                    // start with first element
+                    while (pathWalker.hasMoreElements() && (is == null)) {
+                        srcPath.append("/");
+                        srcPath.append(pathWalker.nextElement());
+                        is = context.getResourceAsStream(srcPath.toString());
                     }
+                    destPath.append(tmpDir);
+                    destPath.append("/");
+                    destPath.append(srcPath);
+                }
 
-                    // create file
-                    if (!f.createNewFile()) {
-                        return;
-                    }
-                    FileOutputStream fos = new FileOutputStream(f);
-
-                    // copy data
-                    IOTools.flow(is, fos);
-                    is.close();
-                    fos.close();
+                if (is == null) {
+                    // didn't find anything, give up now
                     if (debug >= 2) {
-                        log("expandCGIScript: expanded '" + srcPath + "' to '" + destPath + "'");
+                        log("expandCGIScript: source '" + srcPath + "' not found");
+                    }
+                    return;
+                }
+
+
+                File f = new File(destPath.toString());
+                if (f.exists()) {
+                    // Don't need to expand if it already exists
+                    return;
+                }
+
+                // create directories
+                String dirPath = destPath.toString().substring(
+                        0,destPath.toString().lastIndexOf("/"));
+                File dir = new File(dirPath);
+                if (!dir.mkdirs() && debug >= 2) {
+                    log("expandCGIScript: failed to create directories for '" +
+                            dir.getAbsolutePath() + "'");
+                    return;
+                }
+
+                try (FileOutputStream fos = new FileOutputStream(f)){
+                    synchronized (expandFileLock) {
+                        // make sure file doesn't exist
+                        if (f.exists()) {
+                            return;
+                        }
+
+                        // create file
+                        if (!f.createNewFile()) {
+                            return;
+                        }
+
+                        // copy data
+                        IOTools.flow(is, fos);
+                        if (debug >= 2) {
+                            log("expandCGIScript: expanded '" + srcPath + "' to '" + destPath + "'");
+                        }
+                    }
+                } catch (IOException ioe) {
+                    // delete in case file is corrupted
+                    if (f.exists()) {
+                        if (!f.delete() && debug >= 2) {
+                            log("expandCGIScript: failed to delete '" +
+                                    f.getAbsolutePath() + "'");
+                        }
                     }
                 }
-            } catch (IOException ioe) {
-                // delete in case file is corrupted 
-                if (f.exists()) {
-                    if (!f.delete() && debug >= 2) {
-                        log("expandCGIScript: failed to delete '" +
-                                f.getAbsolutePath() + "'");
-                    }
+            } finally {
+                if (is != null) {
+                  try {
+                    is.close();
+                  } catch (IOException ioe) {
+                    //ignore
+                  }
                 }
             }
         }

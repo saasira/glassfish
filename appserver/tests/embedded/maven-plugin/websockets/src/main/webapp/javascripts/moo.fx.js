@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2018 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://oss.oracle.com/licenses/CDDL+GPL-1.1
+ * or LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -47,7 +47,6 @@ Fx.Base.prototype = {
 		this.options = Object.extend({
 			onStart: function(){},
 			onComplete: function(){},
-			transition: Fx.Transitions.sineInOut,
 			duration: 500,
 			unit: 'px',
 			wait: true,
@@ -163,10 +162,3 @@ Fx.Styles.prototype = Object.extend(new Fx.Base(), {
 	}
 
 });
-
-//Transitions (c) 2003 Robert Penner (http://www.robertpenner.com/easing/), BSD License.
-
-Fx.Transitions = {
-	linear: function(t, b, c, d) { return c*t/d + b; },
-	sineInOut: function(t, b, c, d) { return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b; }
-};

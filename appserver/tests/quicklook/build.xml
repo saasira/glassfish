@@ -3,19 +3,19 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://oss.oracle.com/licenses/CDDL+GPL-1.1
+    or LICENSE.txt.  See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -238,7 +238,7 @@
         <ant dir="rest" target="build"/>
         <ant dir="osgitest/basicosgi" target="build"/>
         <ant dir="web/helloworld" target="build-deploy"/>
-        <ant dir="web/jsfastrologer" target="build-deploy"/>
+        <!--<ant dir="web/jsfastrologer" target="build-deploy"/>-->
         <ant dir="web/jsfinjection" target="build-deploy"/>
         <ant dir="jdbc/jdbcusertx" target="build-deploy"/>
         <ant dir="persistence/jpainjectemf" target="build-deploy"/>
@@ -260,21 +260,16 @@
         <ant dir="ejb/singleton" target="build-deploy"/>
         <ant dir="ejb/cmp" target="build-deploy"/>
         <ant dir="ejb/mdb" target="build"/>
-        <ant dir="jms/injection" target="build-deploy"/>
-        <!-- Temporarily jruby test is commented, because we need to integrate a newer version
-             for the test to pass. We are waiting for RE to release a newer version.
-        <ant dir="web/jruby" target="build-deploy"/>
-        -->
+        <ant dir="jms/injection" target="build-deploy"/>        
         <ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>
         <ant dir="wsit/jsr109tester" target="build-deploy"/>
-        <ant dir="wsit/jaxbosgi" target="build-deploy"/>
         <ant dir="security/appperms" target="build-deploy"/>
     </target>
 
     <target name="undeploy">
         <record name="${basedir}/undeploy.output" action="start"/>
         <ant dir="web/helloworld" target="undeploy"/>
-        <ant dir="web/jsfastrologer" target="undeploy"/>
+        <!--<ant dir="web/jsfastrologer" target="undeploy"/>-->
         <ant dir="web/jsfinjection" target="undeploy"/>
         <ant dir="jdbc/jdbcusertx" target="undeploy"/>
         <ant dir="persistence/jpainjectemf" target="undeploy"/>
@@ -295,13 +290,8 @@
         <ant dir="ejb/singleton" target="undeploy"/>
         <ant dir="ejb/remoteview" target="undeploy"/>
         <ant dir="ejb/cmp" target="undeploy"/>
-        <!-- Temporarily jruby test is commented, because we need to integrate a newer version
-             for the test to pass. We are waiting for RE to release a newer version.
-	<ant dir="web/jruby" target="undeploy"/>
-        -->
        <!-- <ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>
         <ant dir="wsit/jsr109tester" target="undeploy"/>-->
-        <ant dir="wsit/jaxbosgi" target="undeploy"/>
         <ant dir="security/appperms" target="undeploy"/>
     </target>
 
@@ -312,11 +302,7 @@
 		<fileset dir="${basedir}" includes="**/classes"/>
 	</delete>
         <delete dir="${basedir}/test-output" includeemptydirs="true"/>
-        <delete dir="${basedir}/dist" includeemptydirs="true"/>
-        <!-- Temporarily jruby test is commented, because we need to integrate a newer version
-             for the test to pass. We are waiting for RE to release a newer version.
-	<delete dir="${basedir}/web/jruby/helloworld" includeemptydirs="true"/>
-        -->
+        <delete dir="${basedir}/dist" includeemptydirs="true"/>        
 	<delete includeemptydirs="true">
 		<fileset dir="${basedir}">
 			<include name="**/*.output"/>

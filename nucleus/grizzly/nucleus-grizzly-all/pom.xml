@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>5.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -150,7 +150,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.gmbal</groupId>
-            <artifactId>gmbal-api-only</artifactId>
+            <artifactId>gmbal</artifactId>
             <version>${gmbal.grizzly.version}</version>
             <scope>provided</scope>
         </dependency>        

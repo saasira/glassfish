@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,13 +43,13 @@ import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.util.DOMWriter;
-import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.XMLWriter;
 import org.apache.naming.resources.CacheEntry;
@@ -248,22 +207,16 @@ public class WebdavServlet
      /**
      * MD5 message digest provider.
      */
-    protected static final MessageDigest md5Helper;
+    protected static final MessageDigest sha256Helper;
 
     static {
         // Load the MD5 helper used to calculate signatures.
         try {
-            md5Helper = MessageDigest.getInstance("MD5");
+            sha256Helper = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("No MD5");
+            throw new IllegalStateException("No SHA-256");
         }
     }
-
-
-    /**
-     * The MD5 helper object for this class.
-     */
-    protected static final MD5Encoder md5Encoder = new MD5Encoder();
 
 
     // ----------------------------------------------------- Instance Variables
@@ -335,6 +288,8 @@ public class WebdavServlet
         DocumentBuilderFactory documentBuilderFactory = null;
         try {
             documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            documentBuilderFactory.setValidating(true);
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -1149,11 +1104,11 @@ public class WebdavServlet
                 + secret;
             
             byte[] digestBytes = null;
-            synchronized(md5Helper) {
-                digestBytes = md5Helper.digest(lockTokenStr.getBytes(
+            synchronized(sha256Helper) {
+                digestBytes = sha256Helper.digest(lockTokenStr.getBytes(
                             Charset.defaultCharset()));
             }
-            String lockToken = new String(md5Encoder.encode(digestBytes));
+            String lockToken = new String(digestBytes);
 
             if ( exists && object instanceof DirContext &&
                 lock.depth == INFINITY) {

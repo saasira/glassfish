@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2017 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2018 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>core</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>5.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>api-exporter-fragment</artifactId>
@@ -245,8 +245,7 @@ javax.swing.text.rtf; \
 javax.swing.tree; \
 javax.swing.undo; \
 javax.tools; \
-javax.transaction; javax.transaction.xa; \
-javax.transaction.xa; \
+javax.transaction; \
 javax.validation; \
 javax.validation.bootstrap; \
 javax.validation.constraints; \
@@ -339,9 +338,7 @@ org.glassfish.hk2.security.ssl; \
 com.sun.org.apache.xerces.internal.jaxp; \
 com.sun.org.apache.xalan.internal.xsltc.trax; \
 com.sun.org.apache.xerces.internal.parsers; \
-com.sun.pkg.client; \
 com.ctc.wstx.stax; \
-com.sun.jmx.remote.protocol.jmxmp; \
 org.glassfish.hk2.security.provider; \
 org.glassfish.hk2.security.auth.realm.file; \
 org.glassfish.hk2.security.auth.realm.certificate; \

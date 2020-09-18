@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,6 +17,7 @@
 
 package org.apache.catalina.realm;
 
+import static com.sun.logging.LogCleanerUtil.neutralizeForLog;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.connector.Response;
@@ -65,10 +25,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.util.HexUtils;
-import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.MD5Encoder;
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.util.*;
 
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
@@ -171,15 +128,9 @@ public abstract class RealmBase
 
 
     /**
-     * The MD5 helper object for this class.
+     * SHA-256 message digest provider.
      */
-    protected static final MD5Encoder md5Encoder = new MD5Encoder();
-
-
-    /**
-     * MD5 message digest provider.
-     */
-    protected static volatile MessageDigest md5Helper;
+    protected static volatile MessageDigest sha256Helper;
 
 
     /**
@@ -437,8 +388,8 @@ public abstract class RealmBase
 
         char[] serverDigest = null;
         // Bugzilla 32137
-        synchronized(md5Helper) {
-            serverDigest = md5Encoder.encode(md5Helper.digest(valueBytes));
+        synchronized(sha256Helper) {
+            serverDigest = new String(sha256Helper.digest(valueBytes)).toCharArray();
         }
 
         if (log.isLoggable(Level.FINE)) {
@@ -1456,9 +1407,9 @@ public abstract class RealmBase
      * Return the digest associated with given principal's user name.
      */
     protected char[] getDigest(String username, String realmName) {
-        if (md5Helper == null) {
+        if (sha256Helper == null) {
             try {
-                md5Helper = MessageDigest.getInstance("MD5");
+                sha256Helper = MessageDigest.getInstance("SHA-256");
             } catch (NoSuchAlgorithmException e) {
                 log.log(Level.SEVERE, LogFacade.CANNOT_GET_MD5_DIGEST_EXCEPTION, e);
                 throw new IllegalStateException(e.getMessage());
@@ -1505,11 +1456,11 @@ public abstract class RealmBase
 
         byte[] digest = null;
         // Bugzilla 32137
-        synchronized(md5Helper) {
-            digest = md5Helper.digest(valueBytes);
+        synchronized(sha256Helper) {
+            digest = sha256Helper.digest(valueBytes);
         }
 
-        return md5Encoder.encode(digest);
+        return new String(digest).toCharArray();
     }
 
 
@@ -1538,6 +1489,7 @@ public abstract class RealmBase
      * @param message Message to be logged
      */
     protected void log(String message) {
+        message = neutralizeForLog(message);
         org.apache.catalina.Logger logger = null;
         String name = null;
         if (container != null) {
@@ -1561,6 +1513,7 @@ public abstract class RealmBase
      * @param t Associated exception
      */
     protected void log(String message, Throwable t) {
+        message = neutralizeForLog(message);
         org.apache.catalina.Logger logger = null;
         String name = null;
         if (container != null) {

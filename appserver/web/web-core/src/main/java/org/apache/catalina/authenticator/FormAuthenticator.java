@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,6 +35,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
+
+import static com.sun.logging.LogCleanerUtil.neutralizeForLog;
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
@@ -158,7 +119,7 @@ public class FormAuthenticator
         // processing section of this method. 
         if (principal != null && !loginAction) {
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Already authenticated '" + principal.getName() + "'");
+                log.log(Level.FINE, neutralizeForLog("Already authenticated '" + principal.getName() + "'"));
             String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
             if (ssoId != null) {
                 getSession(request, true);
@@ -172,15 +133,15 @@ public class FormAuthenticator
         // processing section of this method. 
         if (!cache && !loginAction) {
             session = getSession(request, true);
+            /* Do not log session
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Checking for reauthenticate in session " + session);
-            String username =
-                (String) session.getNote(Constants.SESS_USERNAME_NOTE);
-            char[] password =
-                (char[]) session.getNote(Constants.SESS_PASSWORD_NOTE);
+               log.log(Level.FINE, "Checking for reauthenticate in session " + session);
+           */
+            String username = (String) session.getNote(Constants.SESS_USERNAME_NOTE);
+            char[] password =                (char[]) session.getNote(Constants.SESS_PASSWORD_NOTE);
             if ((username != null) && (password != null)) {
                 if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Reauthenticating username '" + username + "'");
+                    log.log(Level.FINE, neutralizeForLog("Reauthenticating username '" + username + "'"));
                 principal =
                     context.getRealm().authenticate(username, password);
                 if (principal != null) {
@@ -201,11 +162,12 @@ public class FormAuthenticator
         // authentication?  If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = getSession(request, true);
+            /* Do not log session
             if (log.isLoggable(Level.FINE)) {
                 String msg = "Restore request from session '" +
                              session.getIdInternal() + "'";
                 log.log(Level.FINE, msg);
-            }
+            }*/
             principal = (Principal)
                 session.getNote(Constants.FORM_PRINCIPAL_NOTE);
             register(request, response, principal, Constants.FORM_METHOD,
@@ -236,11 +198,13 @@ public class FormAuthenticator
         // No -- Save this request and redirect to the form login page
         if (!loginAction) {
             session = getSession(request, true);
+            /* Do not log session
             if (log.isLoggable(Level.FINE)) {
                 String msg = "Save request in session '" +
                              session.getIdInternal() + "'";
                 log.log(Level.FINE, msg);
             }
+            */
             saveRequest(request, session);
 
             //START Apache bug 36136: Refactor the login and error page forward
@@ -269,7 +233,7 @@ public class FormAuthenticator
         char[] password = ((pwd != null)? pwd.toCharArray() : null);
 
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Authenticating username '" + username + "'");
+            log.log(Level.FINE, neutralizeForLog("Authenticating username '" + username + "'"));
         principal = realm.authenticate(username, password);
         if (principal == null) {
 
@@ -292,7 +256,7 @@ public class FormAuthenticator
 
         // Save the authenticated Principal in our session
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Authentication of '" + username + "' was successful");
+            log.log(Level.FINE, neutralizeForLog("Authentication of '" + username + "' was successful"));
         if (session == null)
             session = getSession(request, true);
         session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);
@@ -324,7 +288,7 @@ public class FormAuthenticator
         }
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Redirecting to original '" + requestURI + "'");
+            log.log(Level.FINE, neutralizeForLog("Redirecting to original '" + requestURI + "'"));
         }
 
         hres.sendRedirect(hres.encodeRedirectURL(requestURI));

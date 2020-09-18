@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,6 +21,7 @@ package org.apache.catalina.realm;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LogFacade;
+import static com.sun.logging.LogCleanerUtil.neutralizeForLog;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
@@ -284,7 +244,7 @@ public class JAASRealm
         if( appName==null ) appName="Tomcat";
 
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Authenticating " + appName + " " +  username);
+            log.log(Level.FINE, neutralizeForLog("Authenticating " + appName + " " +  username));
 
         // What if the LoginModule is in the container class loader ?
         //
@@ -298,7 +258,7 @@ public class JAASRealm
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "Error initializing JAAS: " +  e.toString());
 
-                String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), username);
+                String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), neutralizeForLog(username));
                 log.log(Level.FINE, msg, e);
             }
             return (null);
@@ -307,7 +267,7 @@ public class JAASRealm
         }
 
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Login context created " + username);
+            log.log(Level.FINE, "Login context created " + neutralizeForLog(username));
 
         // Negotiate a login via this LoginContext
         Subject subject = null;
@@ -316,28 +276,28 @@ public class JAASRealm
             subject = loginContext.getSubject();
             if (subject == null) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
+                    log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, neutralizeForLog(username));
                 }
                 return (null);
             }
         } catch (AccountExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT, neutralizeForLog(username));
             }
             return (null);
         } catch (CredentialExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL, neutralizeForLog(username));
             }
             return (null);
         } catch (FailedLoginException e) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, neutralizeForLog(username));
             }
             return (null);
         } catch (LoginException e) {
             String msg = MessageFormat.format(rb.getString(LogFacade.LOGIN_EXCEPTION_AUTHENTICATING_USERNAME),
-                                              username);
+                    neutralizeForLog(username));
             log.log(Level.FINE, msg, e);
             return (null);
         } catch (Throwable e) {
@@ -346,18 +306,18 @@ public class JAASRealm
         }
 
         if( log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Getting principal " + subject);
+            log.log(Level.FINE, neutralizeForLog("Getting principal " + subject));
 
         // Return the appropriate Principal for this authenticated Subject
         Principal principal = createPrincipal(username, subject);
         if (principal == null) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Failed to authenticate username " + username);
+                log.log(Level.FINE, "Failed to authenticate username " + neutralizeForLog(username));
             }
             return (null);
         }
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Successful to authenticate username " + username);
+            log.log(Level.FINE, "Successful to authenticate username " + neutralizeForLog(username));
         }
 
         return (principal);

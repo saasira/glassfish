@@ -344,7 +344,7 @@
         <ant dir="servlet-3.1/partSubmittedFileName" target="all"/>
         <ant dir="servlet-3.1/servletContextGetVirtualServerName" target="all"/>
         <ant dir="localeEncodingMapping" target="all"/>
-        <ant dir="servlet-4.0/setSessionTimeout" target="all"/>
+        <!--<ant dir="servlet-4.0/setSessionTimeout" target="all"/>
         <ant dir="servlet-4.0/addJspFile" target="all"/>
         <ant dir="servlet-4.0/defaultContextPath" target="all"/>
         <ant dir="servlet-4.0/defaultContextPathEar" target="all"/>
@@ -358,7 +358,7 @@
         <ant dir="servlet-4.0/trailer" target="all"/>
         <ant dir="servlet-4.0/compositeTrailerSupplier" target="all"/>
         <ant dir="servlet-4.0/pushArbitraryMethod" target="all"/>
-        <ant dir="servlet-4.0/pushDynamic" target="all"/>
+        <ant dir="servlet-4.0/pushDynamic" target="all"/>-->
     </target>
 
     <target name="web-container" depends="init-report">
@@ -437,7 +437,6 @@
         <ant dir="ssiEscapeCharacter" target="all"/>
         <ant dir="ssiHtmlEntity" target="all"/>
         <ant dir="threadPoolIdleTimeout" target="all"/>
-        <ant dir="useBundledJsf" target="all"/>
         <ant dir="useBundledJsfWithTagCompilation" target="all"/>
         <ant dir="valveGlassFishStyleBackwardCompatible" target="all"/>
         <ant dir="valveTomcatStyle" target="all"/>

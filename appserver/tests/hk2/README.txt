@@ -1,5 +1,3 @@
-Copyright (c) 2012-2017 Oracle and/or its affiliates. All rights reserved.
-
 This is a set of integrations tests for hk2 and GlassFish.
 
 They currently require two parameters to be specified:

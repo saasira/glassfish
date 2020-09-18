@@ -225,10 +225,10 @@ public class SetupSshTest extends SshBaseDevTest {
         removePasswords("ALIAS");
 
         addPassword("${ALIAS=foo}", PasswordType.SSH_PASS);
-        report("setup-ssh-invalid-alias", !asadmin("setup-ssh", "--generatekey", remoteHost));
+        report("setup-ssh-invalid-alias", !asadmin("setup-ssh", SSH_USER_OPTION, sshUser, "--generatekey", remoteHost));
 
         addPassword("${ALIAS=" + SSH_ALIAS_PASS + "}", PasswordType.SSH_PASS);
-        report("setup-ssh-with-alias", asadmin("setup-ssh", "--generatekey", remoteHost));
+        report("setup-ssh-with-alias", asadmin("setup-ssh", SSH_USER_OPTION, sshUser, "--generatekey", remoteHost));
         deleteDirectory(new File(SSH_DIRECTORY));
         removePasswords("SSH");
 
@@ -275,6 +275,10 @@ public class SetupSshTest extends SshBaseDevTest {
 
     }
 
+    /*
+     * In-order to run this test, one needs to generate the public-private key first, enable this test and run it. Pre-generated id_dsa and id_dsa.pub keys are
+     * being removed.
+     */    
     private void testEncryptedKey() {
         //pass correct ssh password for each test
         addPassword(PasswordValue.RIGHT, PasswordType.SSH_PASS);

@@ -1,46 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
+ * Copyright (c) 1997-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,6 +38,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.RequestUtil;
+import org.glassfish.common.util.InputValidationUtil;
 import org.glassfish.grizzly.WriteHandler;
 import org.glassfish.grizzly.http.util.ByteChunk;
 
@@ -598,11 +558,27 @@ public class OutputBuffer extends Writer
         }
 
         // Create JSESSIONID cookie that includes jvmRoute
-        Cookie cookie = new Cookie(ctx.getSessionCookieName(),
+        Cookie cookie = getSafeCookie(ctx.getSessionCookieName(),
                 sess.getIdInternal() + "." + ctx.getJvmRoute());
         request.configureSessionCookie(cookie);
         grizzlyResponse.addHeader(SET_COOKIE_HEADER,
                 response.getCookieString(cookie));
+    }
+
+    private Cookie getSafeCookie(String name, String value) {
+        Cookie cookie = null;
+        try {
+            String safeName = InputValidationUtil.getSafeHeaderName(name);
+            String safeValue = InputValidationUtil.getSafeCookieHeaderValue(value);
+            cookie = new Cookie(safeName, safeValue);
+        } catch (Exception e) {
+            try {
+                grizzlyResponse.sendError(403, "Forbidden");
+            } catch (Exception ex) {
+                // just return
+            }
+        }
+        return cookie;
     }
 
     /**
@@ -619,8 +595,7 @@ public class OutputBuffer extends Writer
         }
 
         if (replicaLocation != null) {
-            Cookie cookie = new Cookie(
-                Globals.JREPLICA_COOKIE_NAME, replicaLocation);
+            Cookie cookie = getSafeCookie(Globals.JREPLICA_COOKIE_NAME, replicaLocation);
             request.configureSessionCookie(cookie);
             if (request.isRequestedSessionIdFromCookie()) {
                 cookie.setSecure(
@@ -692,7 +667,7 @@ public class OutputBuffer extends Writer
         if (request.getJrouteId() == null
                 || !request.getJrouteId().equals(jrouteId)) {
             // Initial request or failover
-            Cookie cookie = new Cookie(Constants.JROUTE_COOKIE, jrouteId);
+            Cookie cookie = getSafeCookie(Constants.JROUTE_COOKIE, jrouteId);
             request.configureSessionCookie(cookie);
             if (request.isRequestedSessionIdFromCookie()) {
                 /*

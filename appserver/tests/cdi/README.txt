@@ -1,5 +1,3 @@
-Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
-
 This is a set of integrations tests for cdi.
 
 They currently require two parameters to be specified:
